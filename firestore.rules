@@ -1,0 +1,118 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function hasRole(role) {
+      return isSignedIn() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+             getUserData().role == role;
+    }
+
+    function isAdmin() {
+      return hasRole('admin');
+    }
+
+    function isPartner() {
+      return hasRole('partner');
+    }
+
+    function isRestorer() {
+      return hasRole('restorer');
+    }
+
+    function isOwnerOrPresetAarav(userId) {
+      return isSignedIn() && (
+        userId == request.auth.uid || 
+        (userId == 'user-01' && 'email' in request.auth.token && request.auth.token.email == 'itzmebalustrade@gmail.com')
+      );
+    }
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow list: if isSignedIn() && isAdmin();
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow update: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow delete: if isSignedIn() && isAdmin();
+    }
+
+    // Orders collection
+    match /orders/{orderId} {
+      allow read: if isSignedIn() && (isOwnerOrPresetAarav(resource.data.userId) || isAdmin() || isPartner() || isRestorer());
+      allow create: if isSignedIn() && (request.resource.data.userId == request.auth.uid || isAdmin());
+      allow update: if isSignedIn() && (
+        isAdmin() || 
+        (isOwner(resource.data.userId) && request.resource.data.userId == resource.data.userId) || 
+        isPartner() || 
+        isRestorer()
+      );
+      allow delete: if isSignedIn() && isAdmin();
+    }
+
+    // Appointments collection
+    match /appointments/{appointmentId} {
+      allow read: if isSignedIn() && (isOwnerOrPresetAarav(resource.data.userId) || isAdmin() || isPartner());
+      allow create: if isSignedIn() && (request.resource.data.userId == request.auth.uid || isAdmin());
+      allow update: if isSignedIn() && (isAdmin() || isPartner());
+      allow delete: if isSignedIn() && isAdmin();
+    }
+
+    // Files collection
+    match /files/{fileId} {
+      allow read: if isSignedIn() && (
+        isOwnerOrPresetAarav(resource.data.userId) || 
+        isAdmin() || 
+        isRestorer() || 
+        (resource.data.isShared == true)
+      );
+      allow create: if isSignedIn() && (request.resource.data.userId == request.auth.uid || isAdmin() || isRestorer());
+      allow update: if isSignedIn() && (request.resource.data.userId == request.auth.uid || isAdmin() || isRestorer());
+      allow delete: if isSignedIn() && isAdmin();
+    }
+
+    // Albums collection
+    match /albums/{albumId} {
+      allow read: if isSignedIn() && (
+        isOwnerOrPresetAarav(resource.data.ownerId) || 
+        isAdmin() || 
+        ('sharedWith' in resource.data && resource.data.sharedWith != null && 'email' in request.auth.token && resource.data.sharedWith.hasAny([request.auth.token.email]))
+      );
+      allow create: if isSignedIn() && (request.resource.data.ownerId == request.auth.uid || isAdmin());
+      allow update: if isSignedIn() && (isOwner(resource.data.ownerId) || isAdmin());
+      allow delete: if isSignedIn() && (isOwner(resource.data.ownerId) || isAdmin());
+    }
+
+    // Notifications collection
+    match /notifications/{notifId} {
+      allow read: if isSignedIn() && (isOwnerOrPresetAarav(resource.data.userId) || isAdmin());
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && (isOwner(resource.data.userId) || isAdmin());
+      allow delete: if isSignedIn() && (isOwner(resource.data.userId) || isAdmin());
+    }
+
+    // S3 Uploads collection
+    match /s3_uploads/{uploadId} {
+      allow read: if isSignedIn() && (isOwnerOrPresetAarav(resource.data.userId) || isAdmin());
+      allow create: if isSignedIn() && (request.resource.data.userId == request.auth.uid || isAdmin());
+      allow delete: if isSignedIn() && isAdmin();
+    }
+  }
+}

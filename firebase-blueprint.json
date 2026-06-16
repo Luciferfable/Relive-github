@@ -1,0 +1,159 @@
+{
+  "entities": {
+    "AppUser": {
+      "title": "AppUser",
+      "description": "User profile containing roles and preferences.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Auth primary ID matches request.auth.uid" },
+        "email": { "type": "string", "description": "Email used for authentication" },
+        "displayName": { "type": "string", "description": "User profile full name" },
+        "role": { "type": "string", "enum": ["user", "admin", "partner", "restorer"], "description": "Access levels inside memory app" },
+        "profilePhoto": { "type": "string", "description": "Optional profile image url" },
+        "phone": { "type": "string", "description": "Contact number" },
+        "vehicleType": { "type": "string", "description": "Logistics vehicle details if partner role" },
+        "city": { "type": "string", "description": "Operational city (Jaipur or Delhi)" },
+        "rating": { "type": "number", "description": "Partner feedback rating summary" },
+        "ordersCount": { "type": "number", "description": "Logistics history stats" },
+        "address": { "type": "string", "description": "Primary pick-up address address" }
+      },
+      "required": ["uid", "email", "displayName", "role"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Logistics track and digital colorization order pipeline.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique Order ID identifier" },
+        "userId": { "type": "string", "description": "Target customer UID" },
+        "customerName": { "type": "string", "description": "Customer full name" },
+        "customerPhone": { "type": "string", "description": "Customer contact speedway details" },
+        "dateCreated": { "type": "string", "description": "Timestamp ISO formatted date" },
+        "serviceType": { "type": "string", "description": "Photographic, VHS tape baking, colorization choice" },
+        "itemCount": { "type": "number", "description": "Quantity of fragile archives in box" },
+        "deliveryStatus": { "type": "string", "enum": ["appointment_created", "partner_assigned", "partner_accepted", "on_the_way", "arrived", "pickup_verified", "collected", "processing", "restoring", "completed", "delivered"], "description": "Inbound and outbound parcel status tracker" },
+        "restorationStage": { "type": "string", "enum": ["collected", "cleaning", "scanning", "ai_enhancement", "color_restoration", "repair", "quality_check", "uploaded", "completed"], "description": "Archival microscope restoration phase" },
+        "assignedPartnerId": { "type": "string", "description": "Assigned courier partner ID" },
+        "pickupOtp": { "type": "string", "description": "4-digit Secure Handover code" },
+        "otpVerified": { "type": "boolean", "description": "Whether courier verified OTP code at doorstep" },
+        "eta": { "type": "string", "description": "Expected dispatch/arrival timeframe" }
+      },
+      "required": ["id", "userId", "customerName", "dateCreated", "serviceType", "itemCount", "deliveryStatus", "restorationStage", "otpVerified"]
+    },
+    "Appointment": {
+      "title": "Appointment",
+      "description": "Fragile media doorbell picker logistics slots.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "customerName": { "type": "string" },
+        "customerEmail": { "type": "string" },
+        "customerPhone": { "type": "string" },
+        "address": { "type": "string" },
+        "city": { "type": "string" },
+        "scheduledDate": { "type": "string" },
+        "timeSlot": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "assigned", "completed", "cancelled"] },
+        "notes": { "type": "string" }
+      },
+      "required": ["id", "userId", "customerName", "address", "city", "scheduledDate", "timeSlot", "status"]
+    },
+    "FileItem": {
+      "title": "FileItem",
+      "description": "Digital preservation assets inside Family Vault.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string", "enum": ["image", "video", "audio", "album"] },
+        "category": { "type": "string", "enum": ["wedding", "childhood", "heritage", "general"] },
+        "albumId": { "type": "string" },
+        "originalUrl": { "type": "string" },
+        "restoredUrl": { "type": "string" },
+        "restorationNotes": { "type": "string" },
+        "resolution": { "type": "string" },
+        "fileSize": { "type": "string" },
+        "dateAdded": { "type": "string" },
+        "userId": { "type": "string" }
+      },
+      "required": ["id", "name", "type", "originalUrl", "restoredUrl", "dateAdded", "userId"]
+    },
+    "FamilyVault": {
+      "title": "FamilyVault",
+      "description": "Groupings under family themes like Jaipur Wedding.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string", "enum": ["wedding", "childhood", "heritage", "general"] },
+        "coverUrl": { "type": "string" },
+        "createdDate": { "type": "string" },
+        "ownerId": { "type": "string" }
+      },
+      "required": ["id", "title", "category", "coverUrl", "createdDate", "ownerId"]
+    },
+    "AppNotification": {
+      "title": "AppNotification",
+      "description": "Real-time user updates for active pipeline progress.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string", "enum": ["order", "pickup", "restoration", "delivery", "general"] },
+        "date": { "type": "string" },
+        "isRead": { "type": "boolean" }
+      },
+      "required": ["id", "userId", "title", "message", "type", "date", "isRead"]
+    },
+    "S3Upload": {
+      "title": "S3Upload",
+      "description": " AWS S3 secure image files uploaded and listed on the platform.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "fileName": { "type": "string" },
+        "fileType": { "type": "string" },
+        "s3Url": { "type": "string" },
+        "key": { "type": "string" },
+        "bucket": { "type": "string" },
+        "region": { "type": "string" },
+        "uploadedAt": { "type": "string" }
+      },
+      "required": ["userId", "fileName", "s3Url", "key", "bucket", "region"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/AppUser" },
+      "description": "Primary user profiles registered inside the system."
+    },
+    "/orders/{orderId}": {
+      "schema": { "$ref": "#/entities/Order" },
+      "description": "Database containing fragile restoration order records."
+    },
+    "/appointments/{appointmentId}": {
+      "schema": { "$ref": "#/entities/Appointment" },
+      "description": "Doorbell logistics appointment scheduling sessions."
+    },
+    "/files/{fileId}": {
+      "schema": { "$ref": "#/entities/FileItem" },
+      "description": "Digital vaults storing restored archives."
+    },
+    "/albums/{albumId}": {
+      "schema": { "$ref": "#/entities/FamilyVault" },
+      "description": "Albums representing specific historical groups."
+    },
+    "/notifications/{notifId}": {
+      "schema": { "$ref": "#/entities/AppNotification" },
+      "description": "Real-time logging alerts triggered for user milestones."
+    },
+    "/s3_uploads/{uploadId}": {
+      "schema": { "$ref": "#/entities/S3Upload" },
+      "description": "Database references tracking raw or restored assets on AWS S3 buckets."
+    }
+  }
+}

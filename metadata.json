@@ -1,0 +1,6 @@
+{
+  "name": "ReLive",
+  "description": "Premium AI-powered Memory Restoration, Family Archive Ecosystem, and Logistics Management Platform.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
